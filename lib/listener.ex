@@ -1,3 +1,5 @@
+# Listener GenServer
+
 defmodule Listener do
   use GenServer
 
@@ -16,6 +18,10 @@ defmodule Listener do
 
   def getHops(server) do
     GenServer.call(server, {:getHops})
+  end
+
+  def getThreshold(server) do
+    GenServer.call(server, {:getThreshold})
   end
 
   #  SERVER SIDE
@@ -43,9 +49,13 @@ defmodule Listener do
   end
 
   def handle_call({:getHops}, from, state) do
-        IO.inspect("here")
-        hops = Map.fetch!(state, :hops)
+    hops = Map.fetch!(state, :hops)
     {:reply, hops, state}
+  end
+
+  def handle_call({:getHops}, from, state) do
+    threshold = Map.fetch!(state, :threshold)
+    {:reply, threshold, state}
   end
 
 

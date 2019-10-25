@@ -1,3 +1,5 @@
+# PeerNode GenServer
+
 defmodule PeerNode do
   use GenServer
 
@@ -81,6 +83,7 @@ defmodule PeerNode do
     end)
     neighbor_tuple = {neighbors, max}
     end
+
 
     #  SERVER SIDE
   def init(:ok) do
