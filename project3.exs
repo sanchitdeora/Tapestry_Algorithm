@@ -1,9 +1,14 @@
 defmodule Proj3 do
-  numNodes = 10
-  numRequests = 2
+  numNodes = 100
+  numRequests = 5
 
+  threshold = numNodes * numRequests
   num1 = numNodes * 0.8 |> :erlang.trunc
   num2 = numNodes - num1
+
+  Process.register(self(), Main)
+  {:ok, god_pid} = Listener.start_link(name: MyListener)
+  Listener.setThreshold(MyListener, threshold)
 
   nodeList = Tapestry.assignID(numNodes)
 #  nodeList = ["1240", "A320", "1320", "F135", "A738"]
@@ -27,7 +32,7 @@ defmodule Proj3 do
     Process.sleep(1)
     state = PeerNode.getNeighborMap(x)
     neighbors = Map.fetch!(state, :neighbors)
-    IO.inspect(state, label: "Final Server #{x}")
+#    IO.inspect(state, label: "Final Server #{x}")
   end)
 
   IO.inspect("Network Created")
@@ -35,16 +40,13 @@ defmodule Proj3 do
 
   Tapestry.startRouting(nodeList, numRequests)
 
+  receive do
+    {:done} -> IO.inspect("YO!")
+      hops = Listener.getHops(MyListener)
+      max = Enum.max(hops)
+      IO.inspect(hops, label: "Max Hop = #{max} from Hops")
+  end
 
-
-
-  Enum.map(nodeList, fn x ->
-    state_after_exec = :sys.get_state(x, :infinity)
-    Process.sleep(1)
-    state = PeerNode.getNeighborMap(x)
-    neighbors = Map.fetch!(state, :neighbors)
-#    IO.inspect(state, label: "Final Server #{x}")
-  end)
 #  IO.inspect(node_ids)
 
 #  neighbors = Enum.map(nodeList, fn x ->

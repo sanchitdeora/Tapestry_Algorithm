@@ -98,11 +98,14 @@ defmodule Tapestry do
   end
 
   def startRouting(nodeList, numRequests) do
-    sender = List.first(nodeList)
-    receiver = Enum.random(List.delete(nodeList, sender))
-    IO.inspect([sender | receiver], label: "STARTING TO ROUTE")
 
-    PeerNode.sendMessage(sender, {sender, sender, receiver, 0})
+    Enum.map(1..numRequests, fn x ->
+      Enum.map(nodeList, fn sender ->
+        receiver = Enum.random(List.delete(nodeList, sender))
+#        IO.inspect([sender | receiver], label: "STARTING TO ROUTE")
+        PeerNode.sendMessage(sender, {sender, sender, receiver, 0})
+      end)
+    end)
   end
 
 

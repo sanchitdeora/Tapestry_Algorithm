@@ -64,7 +64,7 @@ defmodule PeerNode do
       node_string = Atom.to_string(other_node)
       prefixCheck(server, {server, server_string, node_string, 0})
     end)
-    IO.inspect(prefix_indices)
+#    IO.inspect(prefix_indices)
 
     max = Enum.max(prefix_indices)
     neighborIndex =
@@ -108,7 +108,7 @@ defmodule PeerNode do
       else
         closerNode = Utility.closerHash(server, Enum.at(existingval, 0), other_node)
       if closerNode == other_node do
-        IO.inspect([existingval | other_node], label: "CHECKING CLOSER NODE #{server}")
+#        IO.inspect([existingval | other_node], label: "CHECKING CLOSER NODE #{server}")
          deleteNeighbors(server, {server, Enum.at(existingval, 0)})
          setNeighbors(server, {server, other_node})
       end
@@ -177,7 +177,7 @@ defmodule PeerNode do
   def handle_cast({:join, args}, state) do
     {server, nodeList1, nodeList2} = args
     neighbor_tuple = findNearestNeighbor(server, {server, nodeList1})
-    IO.inspect(neighbor_tuple, label: "HELLO")
+#    IO.inspect(neighbor_tuple, label: "HELLO")
     {neighbors, max} = neighbor_tuple
     PeerNode.joinNeighborMap(server, {server, neighbors})
 #    Enum.each(neighbors, fn neighbor_node ->
@@ -199,27 +199,29 @@ defmodule PeerNode do
 
   def handle_cast({:sendMessage, args}, state) do
     {server, sender, receiver, hops} = args
-    IO.inspect("I reached sendMessage")
+#    IO.inspect("I reached sendMessage")
     if server == receiver do
-      IO.inspect("I reached the receiver")
+#      IO.inspect("I reached the receiver")
+      Listener.setHops(MyListener, hops)
+
       {:noreply, state}
     else
       neighbors = Map.fetch!(state, :neighbors)
-      IO.inspect(neighbors, label: "Need to find next node from ")
+#      IO.inspect(neighbors, label: "Need to find next node from ")
 
       prefix_index = prefixCheck(server, {server, Atom.to_string(server), Atom.to_string(receiver), 0})
-      IO.inspect(prefix_index, label: "Next node at the Longest prefix ")
+#      IO.inspect(prefix_index, label: "Next node at the Longest prefix ")
       prefix = String.at(Atom.to_string(receiver), prefix_index)
       prefix = Utility.hexToDec(prefix)
 
-      IO.inspect(prefix, label: "Next node at the prefix ")
+#      IO.inspect(prefix, label: "Next node at the prefix ")
 
       level = "L" <> Integer.to_string(prefix_index) |> String.to_atom()
       levelList = Map.fetch!(state, level)
-      IO.inspect(levelList, label: "Level List ")
+#      IO.inspect(levelList, label: "Level List ")
       next_node = Enum.at(levelList, prefix)
 
-      IO.inspect(next_node, label: "Hence, next node is ")
+#      IO.inspect(next_node, label: "Hence, next node is ")
       PeerNode.sendMessage(Enum.at(next_node,0), {Enum.at(next_node,0), sender, receiver, (hops + 1)})
     end
 
