@@ -2,8 +2,7 @@
 Distributed Operating System - Project 3
 Team Members: Sanchit Deora(8909 - 4939), Rohit Devulapalli (4787- 4434)
  
-What is working?
-<br/><br/>
+What is working?    
 This is a p2p tapestry protocol implemented on elixir. In our implementation we are building a tapestry and successfully sending the messages and printing the maximum number of hops per request across all nodes.
 
 Largest Network of nodes    
