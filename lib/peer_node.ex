@@ -40,6 +40,14 @@ defmodule PeerNode do
     GenServer.cast(server, {:sendMessage, args})
   end
 
+  def fail(server, args) do
+    GenServer.cast(server, {:fail, args})
+  end
+
+  def removeFailedNode(server, args) do
+    GenServer.cast(server, {:removeFailedNode, args})
+  end
+
   def getNeighborList(server) do
     GenServer.call(server, {:getNeighborList})
   end
@@ -180,6 +188,10 @@ defmodule PeerNode do
   def handle_cast({:join, args}, state) do
     {server, nodeList1, nodeList2} = args
     neighbor_tuple = findNearestNeighbor(server, {server, nodeList1})
+    if(server == :AC40252B ||  server == :AB2DE132) do
+      IO.inspect(neighbor_tuple, label: "#{server}")
+    end
+
 #    IO.inspect(neighbor_tuple, label: "HELLO")
     {neighbors, max} = neighbor_tuple
     PeerNode.joinNeighborMap(server, {server, neighbors})
@@ -202,9 +214,10 @@ defmodule PeerNode do
 
   def handle_cast({:sendMessage, args}, state) do
     {server, sender, receiver, hops} = args
-#    IO.inspect("I reached sendMessage")
+#    IO.inspect(args, label: "I reached sendMessage")
     if server == receiver do
 #      IO.inspect("I reached the receiver")
+#      IO.inspect(args)
       Listener.setHops(MyListener, hops)
 
       {:noreply, state}
@@ -223,7 +236,11 @@ defmodule PeerNode do
       levelList = Map.fetch!(state, level)
 #      IO.inspect(levelList, label: "Level List ")
       next_node = Enum.at(levelList, prefix)
-
+      if next_node == [] do
+        IO.inspect("HELLO")
+        threshold = Listener.getThreshold(MyListener)
+        Listener.setThreshold(MyListener, threshold - 1)
+      end
 #      IO.inspect(next_node, label: "Hence, next node is ")
       PeerNode.sendMessage(Enum.at(next_node,0), {Enum.at(next_node,0), sender, receiver, (hops + 1)})
     end
@@ -231,8 +248,38 @@ defmodule PeerNode do
     {:noreply, state}
   end
 
+  def handle_cast({:fail, args}, state) do
+    {server, numRequests} = args
+    nodeList = Listener.getNodeList(MyListener)
+    nodeList = List.delete(nodeList, server)
+    Listener.setNodeList(MyListener, nodeList)
 
+    threshold = Listener.getThreshold(MyListener)
+    Listener.setThreshold(MyListener, threshold - numRequests)
 
+    Enum.each(nodeList, fn x ->
+      PeerNode.removeFailedNode(x, {x, server})
+    end)
+    {:noreply, state}
+  end
+
+  def handle_cast({:removeFailedNode, args}, state) do
+    {server, failedNode} = args
+
+    neighbors = Map.fetch!(state, :neighbors)
+    neighbors = neighbors -- [failedNode]
+    state = Map.replace!(state, :neighbors, neighbors)
+    Enum.each(0..7, fn i ->
+      level = ("L" <> Integer.to_string(i)) |> String.to_atom()
+      levelList = Map.fetch!(state, level)
+      levelList = levelList -- [[failedNode]]
+      IO.inspect(levelList, label: "#{server} L#{i}")
+      state = Map.replace!(state, level, levelList)
+      {:noreply, state}
+    end)
+
+    {:noreply, state}
+  end
 
   def handle_call({:getNeighborMap}, _from, state) do
     {:reply, state, state}
@@ -242,34 +289,5 @@ defmodule PeerNode do
     neighbors = Map.fetch!(state, :neighbors)
     {:reply, neighbors, state}
   end
-
-    #  def handle_cast({:setNeighborMap, args}, state) do
-    #
-    #    {server, list} = args
-    #    IO.inspect(list, label: "For server #{server}, Remaining")
-    #    server_string = Atom.to_string(server)
-    #    diff_index = Enum.map(list, fn other_node ->
-    #      node_string = Atom.to_string(other_node)
-    #      prefixCheck(server, {server, server_string, node_string, 0})
-    #    end)
-    #    IO.inspect(diff_index, label: "#{server}")
-    #
-    #    Enum.each(0..(length(list) - 1), fn x ->
-    #      ind = Enum.fetch!(diff_index, x)
-    #      col = ("L" <> Integer.to_string(ind + 1)) |> String.to_atom()
-    #      other_node = Enum.fetch!(list, x)
-    #      other_node_string = Atom.to_string(other_node)
-    #      row = String.at(other_node_string, ind) |> String.to_integer()
-    ##      IO.inspect([col | row], label: "For #{server} and #{other_node} ")
-    #
-    #      levelList = Map.fetch!(state, col)
-    #      levelList = List.delete_at(levelList, row)
-    #      levelList = List.insert_at(levelList, row, other_node)
-    #      state = Map.replace!(state, col, levelList)
-    #      IO.inspect(state, label: "#{server}")
-    #    end)
-    #
-    #    {:noreply, state}
-    #  end
 
 end

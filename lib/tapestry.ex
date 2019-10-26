@@ -2,7 +2,6 @@ defmodule Tapestry do
 
 #  Assigns Unique 8-digit Hex code
   def assignID(numNodes) do
-    #    GENERATE NODE ID HERE
     list_ids = Enum.map(0..(numNodes - 1), fn x ->
       id = :erlang.crc32(Integer.to_string(x)) |> Integer.to_string(16)
       if(String.length(id) < 8) do
@@ -38,17 +37,22 @@ defmodule Tapestry do
       PeerNode.start_link([name: current_node])
     end)
 
-    neighborTuple = Enum.map(nodeList2, fn current_node ->
+    Enum.map(nodeList2, fn current_node ->
       PeerNode.join(current_node,{current_node, nodeList1, nodeList2})
     end)
+
+
   end
 
 #  Starts Routing the Network
-  def startRouting(nodeList, numRequests) do
-
+  def startRouting(numRequests) do
+    nodeList = Listener.getNodeList(MyListener)
     Enum.map(1..numRequests, fn x ->
       Enum.map(nodeList, fn sender ->
-        receiver = Enum.random(List.delete(nodeList, sender))
+#          sender = :AB2DE132
+#          receiver = :AC40252B
+                  receiver = Enum.random(List.delete(nodeList, sender))
+#        IO.inspect(Atom.to_string(sender))
         PeerNode.sendMessage(sender, {sender, sender, receiver, 0})
       end)
     end)

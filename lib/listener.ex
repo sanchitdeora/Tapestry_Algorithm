@@ -16,6 +16,14 @@ defmodule Listener do
     GenServer.call(server, {:setThreshold, args})
   end
 
+  def setNodeList(server, args) do
+    GenServer.call(server, {:setNodeList, args})
+  end
+
+  def getNodeList(server) do
+    GenServer.call(server, {:getNodeList})
+  end
+
   def getHops(server) do
     GenServer.call(server, {:getHops})
   end
@@ -27,12 +35,23 @@ defmodule Listener do
   #  SERVER SIDE
   def init(:ok) do
     {:ok,
-      %{:threshold => 0, :hops => []}
+      %{:threshold => 0, :nodeList => [], :hops => []}
     }
   end
 
   def handle_call({:setThreshold, args}, from, state) do
     state = Map.replace!(state, :threshold, args)
+    hops = Map.fetch!(state, :hops)
+    IO.inspect([hops | args], label: "HEREEEEE")
+    if(length(hops) == args) do
+      send(Main, {:done})
+    end
+    {:reply, state, state}
+  end
+
+  def handle_call({:setNodeList, args}, from, state) do
+    IO.inspect(args, label: "NodeList")
+    state = Map.replace!(state, :nodeList, args)
     {:reply, state, state}
   end
 
@@ -48,15 +67,18 @@ defmodule Listener do
     {:reply, state, state}
   end
 
-  def handle_call({:getHops}, from, state) do
-    hops = Map.fetch!(state, :hops)
-    {:reply, hops, state}
-  end
-
-  def handle_call({:getHops}, from, state) do
+  def handle_call({:getThreshold}, from, state) do
     threshold = Map.fetch!(state, :threshold)
     {:reply, threshold, state}
   end
 
+  def handle_call({:getNodeList}, from, state) do
+    nodeList = Map.fetch!(state, :nodeList)
+    {:reply, nodeList, state}
+  end
 
+  def handle_call({:getHops}, from, state) do
+    hops = Map.fetch!(state, :hops)
+    {:reply, hops, state}
+  end
 end
