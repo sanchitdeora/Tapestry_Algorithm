@@ -20,6 +20,14 @@ defmodule Listener do
     GenServer.call(server, {:setNodeList, args})
   end
 
+  def addFailedNodes(server, args) do
+    GenServer.call(server, {:addFailedNodes, args})
+  end
+
+  def getFailedNodes(server) do
+    GenServer.call(server, {:getFailedNodes})
+  end
+
   def getNodeList(server) do
     GenServer.call(server, {:getNodeList})
   end
@@ -35,7 +43,7 @@ defmodule Listener do
   #  SERVER SIDE
   def init(:ok) do
     {:ok,
-      %{:threshold => 0, :nodeList => [], :hops => []}
+      %{:threshold => 0, :nodeList => [], :hops => [], :failedNodes => []}
     }
   end
 
@@ -64,6 +72,14 @@ defmodule Listener do
     {:reply, state, state}
   end
 
+  def handle_call({:addFailedNodes, args}, from, state) do
+    failedNodes = Map.fetch!(state, :failedNodes)
+    failedNodes = failedNodes ++ [args]
+    state = Map.replace!(state, :failedNodes, failedNodes)
+    {:reply, state, state}
+  end
+
+
   def handle_call({:getThreshold}, from, state) do
     threshold = Map.fetch!(state, :threshold)
     {:reply, threshold, state}
@@ -78,4 +94,10 @@ defmodule Listener do
     hops = Map.fetch!(state, :hops)
     {:reply, hops, state}
   end
+
+  def handle_call({:getFailedNodes}, from, state) do
+    failedNodes = Map.fetch!(state, :failedNodes)
+    {:reply, failedNodes, state}
+  end
+
 end

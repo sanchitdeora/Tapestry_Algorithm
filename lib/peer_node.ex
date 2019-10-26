@@ -112,7 +112,7 @@ defmodule PeerNode do
     col = String.at(node_string, ind) |> Utility.hexToDec()
     levelList = Map.fetch!(state, row)
     existingval = Enum.at(levelList,col)
-    value = if existingval == [] do
+    value = if existingval == [] or existingval == nil do
       setNeighbors(server, {server, other_node})
       [other_node]
       else
@@ -203,27 +203,34 @@ defmodule PeerNode do
 
   def handle_cast({:sendMessage, args}, state) do
     {server, sender, receiver, hops} = args
-    if server == receiver do
-      Listener.setHops(MyListener, hops)
-
-      {:noreply, state}
-    else
-      neighbors = Map.fetch!(state, :neighbors)
-
-      prefix_index = prefixCheck(server, {server, Atom.to_string(server), Atom.to_string(receiver), 0})
-      prefix = String.at(Atom.to_string(receiver), prefix_index)
-      prefix = Utility.hexToDec(prefix)
-
-      level = "L" <> Integer.to_string(prefix_index) |> String.to_atom()
-      levelList = Map.fetch!(state, level)
-      next_node = Enum.at(levelList, prefix)
-      if next_node == nil or next_node == [] do
-        threshold = Listener.getThreshold(MyListener)
-        Listener.setThreshold(MyListener, threshold - 1)
+    failedNodes = Listener.getFailedNodes(MyListener)
+    checkReceiver = Enum.filter(failedNodes, fn i -> i == receiver end)
+    if checkReceiver == [] do
+      if server == receiver do
+        Listener.setHops(MyListener, hops)
+        {:noreply, state}
       else
-        PeerNode.sendMessage(Enum.at(next_node,0), {Enum.at(next_node,0), sender, receiver, (hops + 1)})
+        neighbors = Map.fetch!(state, :neighbors)
+
+        prefix_index = prefixCheck(server, {server, Atom.to_string(server), Atom.to_string(receiver), 0})
+        prefix = String.at(Atom.to_string(receiver), prefix_index)
+        prefix = Utility.hexToDec(prefix)
+
+        level = "L" <> Integer.to_string(prefix_index) |> String.to_atom()
+        levelList = Map.fetch!(state, level)
+        next_node = Enum.at(levelList, prefix)
+        if next_node == nil or next_node == [] do
+          threshold = Listener.getThreshold(MyListener)
+          Listener.setThreshold(MyListener, threshold - 1)
+        else
+          PeerNode.sendMessage(Enum.at(next_node,0), {Enum.at(next_node,0), sender, receiver, (hops + 1)})
+        end
       end
+      else
+      threshold = Listener.getThreshold(MyListener)
+      Listener.setThreshold(MyListener, threshold - 1)
     end
+
 
     {:noreply, state}
   end

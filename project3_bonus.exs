@@ -40,8 +40,8 @@ defmodule ProjectBonus3 do
     _state_after_exec = :sys.get_state(x, :infinity)
   end)
 
-  IO.inspect("Network Created")
-  IO.inspect("Start Routing")
+#  IO.inspect("Network Created")
+#  IO.inspect("Start Routing")
 
   Tapestry.startRouting(numRequests)
 
@@ -52,13 +52,13 @@ defmodule ProjectBonus3 do
     {:done} ->
       hops = Listener.getHops(MyListener)
       max = Enum.max(hops)
-      IO.inspect(hops, label: "Max Hop = #{max} from Hops")
+      IO.inspect(max)
 
-  after 10000 ->
-    IO.puts(:stderr, "No message in 10 seconds")
-    hops = Listener.getHops(MyListener)
-    max = Enum.max(hops)
-    IO.inspect(hops, label: "Max Hop = #{max} from Hops")
+#  after 10000 ->
+#    IO.puts(:stderr, "No message in 10 seconds")
+#    hops = Listener.getHops(MyListener)
+#    max = Enum.max(hops)
+#    IO.inspect(hops, label: "Max Hop = #{max} from Hops")
   end
 
 end
