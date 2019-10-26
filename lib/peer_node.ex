@@ -44,8 +44,8 @@ defmodule PeerNode do
     GenServer.cast(server, {:fail, args})
   end
 
-  def removeFailedNode(server, args) do
-    GenServer.cast(server, {:removeFailedNode, args})
+  def deleteFromNeighborMap(server, args) do
+    GenServer.cast(server, {:deleteFromNeighborMap, args})
   end
 
   def getNeighborList(server) do
@@ -236,13 +236,12 @@ defmodule PeerNode do
       levelList = Map.fetch!(state, level)
 #      IO.inspect(levelList, label: "Level List ")
       next_node = Enum.at(levelList, prefix)
-      if next_node == [] do
-        IO.inspect("HELLO")
+      if next_node == [] or next_node == nil do
         threshold = Listener.getThreshold(MyListener)
         Listener.setThreshold(MyListener, threshold - 1)
+      else
+        PeerNode.sendMessage(Enum.at(next_node,0), {Enum.at(next_node,0), sender, receiver, (hops + 1)})
       end
-#      IO.inspect(next_node, label: "Hence, next node is ")
-      PeerNode.sendMessage(Enum.at(next_node,0), {Enum.at(next_node,0), sender, receiver, (hops + 1)})
     end
 
     {:noreply, state}
@@ -258,25 +257,23 @@ defmodule PeerNode do
     Listener.setThreshold(MyListener, threshold - numRequests)
 
     Enum.each(nodeList, fn x ->
-      PeerNode.removeFailedNode(x, {x, server})
+      PeerNode.deleteNeighbors(x, {x, server})
+      Enum.each(0..7, fn i ->
+        PeerNode.deleteFromNeighborMap(x, {x, i, server})
+      end)
+
     end)
     {:noreply, state}
   end
 
-  def handle_cast({:removeFailedNode, args}, state) do
-    {server, failedNode} = args
+  def handle_cast({:deleteFromNeighborMap, args}, state) do
+    {server, col_index, failedNode} = args
 
-    neighbors = Map.fetch!(state, :neighbors)
-    neighbors = neighbors -- [failedNode]
-    state = Map.replace!(state, :neighbors, neighbors)
-    Enum.each(0..7, fn i ->
-      level = ("L" <> Integer.to_string(i)) |> String.to_atom()
+      level = ("L" <> Integer.to_string(col_index)) |> String.to_atom()
       levelList = Map.fetch!(state, level)
       levelList = levelList -- [[failedNode]]
-      IO.inspect(levelList, label: "#{server} L#{i}")
+#      IO.inspect(levelList, label: "#{server} L#{col_index}")
       state = Map.replace!(state, level, levelList)
-      {:noreply, state}
-    end)
 
     {:noreply, state}
   end

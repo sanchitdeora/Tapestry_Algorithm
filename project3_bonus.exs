@@ -66,13 +66,13 @@ defmodule Proj3 do
     #      Enum.each(nodeList, fn x -> IO.puts(Atom.to_string(x)) end)
     #      IO.inspect(nodeList, label: "Final NodeList")
 
-      Process.sleep(5000)
+#      Process.sleep(0000)
       Enum.map(nodeList, fn x ->
         state_after_exec = :sys.get_state(x, :infinity)
         Process.sleep(1)
         state = PeerNode.getNeighborMap(x)
         neighbors = Map.fetch!(state, :neighbors)
-        IO.inspect(state, label: "Final Server #{x}")
+#        IO.inspect(state, label: "Final Server #{x}")
       end)
 
   end
