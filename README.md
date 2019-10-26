@@ -16,7 +16,7 @@ This is a P2P Tapestry Protocol implemented in Elixir. In our implementation, we
 ### Largest Network of nodes  
 The largest network that we ran our code on was for 5000 nodes and 10 requests for each peer.  
 
-C:\...\tapestry_algorithm> mix run project3.exs 5000 10
+C:\...\tapestry_algorithm> mix run project3.exs 5000 10  
 5
 
 ### Instructions to run the code:  
