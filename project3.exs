@@ -1,4 +1,4 @@
-defmodule Proj3 do
+defmodule Project3 do
 
   [numNodes, numRequests] = System.argv
   {numNodes, _} = Integer.parse(numNodes)
@@ -9,12 +9,11 @@ defmodule Proj3 do
 
 #  Split Nodes to create network and join remaining nodes
   num1 = numNodes * 0.8 |> :erlang.trunc
-  num2 = numNodes - num1
 
   Process.register(self(), Main)
 
 #  Start Listener and Set Threshold
-  {:ok, listener} = Listener.start_link(name: MyListener)
+  Listener.start_link(name: MyListener)
   Listener.setThreshold(MyListener, threshold)
 
 #  Generates 8 digit Hex Node Ids and convert to Atom
@@ -34,7 +33,7 @@ defmodule Proj3 do
   Tapestry.joinNetwork(nodeList2, nodeList1)
 
   Enum.map(nodeList, fn x ->
-    state_after_exec = :sys.get_state(x, :infinity)
+    _state_after_exec = :sys.get_state(x, :infinity)
   end)
 
   IO.inspect("Network Created")
@@ -48,14 +47,12 @@ defmodule Proj3 do
 
     {:done} ->
       hops = Listener.getHops(MyListener)
-      nodeList = Listener.getNodeList(MyListener)
       max = Enum.max(hops)
       IO.inspect(hops, label: "Max Hop = #{max} from Hops")
 
     after 10000 ->
       IO.puts(:stderr, "No message in 10 seconds")
       hops = Listener.getHops(MyListener)
-      nodeList = Listener.getNodeList(MyListener)
       max = Enum.max(hops)
       IO.inspect(hops, label: "Max Hop = #{max} from Hops")
   end

@@ -1,4 +1,4 @@
-defmodule Proj3 do
+defmodule ProjectBonus3 do
 
   [numNodes, numRequests] = System.argv
   {numNodes, _} = Integer.parse(numNodes)
@@ -9,14 +9,14 @@ defmodule Proj3 do
 
   #  Split Nodes to create network and join remaining nodes
   num1 = numNodes * 0.8 |> :erlang.trunc
-  num2 = numNodes - num1
 
   Process.register(self(), Main)
 
   #  Start Listener and Set Threshold
-  {:ok, listener} = Listener.start_link(name: MyListener)
+  Listener.start_link(name: MyListener)
   Listener.setThreshold(MyListener, threshold)
 
+  #  Creates Master GenServer and Initiates Failure Protocol
   {:ok, master} = Master.start_link(name: MyMaster)
   Master.failNodes(master, {numNodes, numRequests})
 
@@ -37,7 +37,7 @@ defmodule Proj3 do
   Tapestry.joinNetwork(nodeList2, nodeList1)
 
   Enum.map(nodeList, fn x ->
-    state_after_exec = :sys.get_state(x, :infinity)
+    _state_after_exec = :sys.get_state(x, :infinity)
   end)
 
   IO.inspect("Network Created")
@@ -45,21 +45,20 @@ defmodule Proj3 do
 
   Tapestry.startRouting(numRequests)
 
+
   #  Waits for the Routing to get done
   receive do
 
     {:done} ->
       hops = Listener.getHops(MyListener)
-      nodeList = Listener.getNodeList(MyListener)
       max = Enum.max(hops)
       IO.inspect(hops, label: "Max Hop = #{max} from Hops")
 
-    # If Network fail Nodes while in Routing and they Timeout
   after 10000 ->
     IO.puts(:stderr, "No message in 10 seconds")
     hops = Listener.getHops(MyListener)
-    nodeList = Listener.getNodeList(MyListener)
     max = Enum.max(hops)
     IO.inspect(hops, label: "Max Hop = #{max} from Hops")
   end
+
 end
