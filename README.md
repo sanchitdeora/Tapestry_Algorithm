@@ -5,7 +5,7 @@ Team Members: Sanchit Deora(8909 - 4939), Rohit Devulapalli (4787- 4434)
 What is working?    
 This is a p2p tapestry protocol implemented on elixir. In our implementation we are building a tapestry and successfully sending the messages and printing the maximum number of hops per request across all nodes.
 
-Largest Network of nodes    
+Largest Network of Nodes    
 The largest network that we ran our code on was for 10000 nodes and 5 requests for each peer
 
 Instructions to run the code:    
