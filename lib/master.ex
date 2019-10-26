@@ -18,7 +18,7 @@ defmodule Master do
     end
 
     def handle_cast({:failNodes, args}, state) do
-        {numNodes, numRequests} = args
+        {_numNodes, numRequests} = args
 
         # Master sleeps for 0 - 2000ms after initiation, before it starts to fail nodes
         :timer.sleep(:rand.uniform(2000))
@@ -27,7 +27,7 @@ defmodule Master do
         nodeList = Listener.getNodeList(MyListener)
 
         # failFactor decides the number of nodes to be failed in the network
-        failFactor = 0.1
+        failFactor = 0.2
         toBeFailed = length(nodeList) * failFactor |> trunc
 
         # Nodes chosen to be failed at random

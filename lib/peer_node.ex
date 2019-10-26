@@ -159,7 +159,7 @@ defmodule PeerNode do
     neighbors = Map.fetch!(state, :neighbors)
     neighbors = neighbors ++ [neighbor_node]
 
-    state = Map.replace(state, :neighbors, neighbors)
+    state = Map.replace!(state, :neighbors, neighbors)
     {:noreply, state}
   end
 
@@ -168,7 +168,7 @@ defmodule PeerNode do
     {server, neighbor_node} = args
     neighbors = Map.fetch!(state, :neighbors)
     neighbors = neighbors -- [neighbor_node]
-    state = Map.replace(state, :neighbors, neighbors)
+    state = Map.replace!(state, :neighbors, neighbors)
     {:noreply, state}
   end
 
@@ -217,7 +217,7 @@ defmodule PeerNode do
       level = "L" <> Integer.to_string(prefix_index) |> String.to_atom()
       levelList = Map.fetch!(state, level)
       next_node = Enum.at(levelList, prefix)
-      if next_node == [] or next_node == nil do
+      if next_node == nil or next_node == [] do
         threshold = Listener.getThreshold(MyListener)
         Listener.setThreshold(MyListener, threshold - 1)
       else
