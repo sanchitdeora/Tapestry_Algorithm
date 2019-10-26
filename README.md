@@ -1,5 +1,5 @@
 # Tapestry_Algorithm
-Distributed Operating System - Project 3
+Distributed Operating System - Project 3  
 Team Members: Sanchit Deora(8909 - 4939), Rohit Devulapalli (4787- 4434)
  
 What is working?    
