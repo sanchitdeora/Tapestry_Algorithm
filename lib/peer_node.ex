@@ -74,7 +74,6 @@ defmodule PeerNode do
       node_string = Atom.to_string(other_node)
       prefixCheck(server, {server, server_string, node_string, 0})
     end)
-#    IO.inspect(prefix_indices)
 
     max = Enum.max(prefix_indices)
     neighborIndex =
@@ -118,18 +117,16 @@ defmodule PeerNode do
       [other_node]
       else
         closerNode = Utility.closerHash(server, Enum.at(existingval, 0), other_node)
-      if closerNode == other_node do
-#        IO.inspect([existingval | other_node], label: "CHECKING CLOSER NODE #{server}")
-         deleteNeighbors(server, {server, Enum.at(existingval, 0)})
-         setNeighbors(server, {server, other_node})
-      end
-      [closerNode]
+        if closerNode == other_node do
+           deleteNeighbors(server, {server, Enum.at(existingval, 0)})
+           setNeighbors(server, {server, other_node})
+        end
+        [other_node] ++ existingval
     end
     levelList = List.delete_at(levelList, col)
     levelList = List.insert_at(levelList, col, value)
     state = Map.replace!(state, row, levelList)
 
-#    setNeighbors(server, {server, other_node})
     {:noreply, state}
   end
 
@@ -163,7 +160,6 @@ defmodule PeerNode do
     neighbors = neighbors ++ [neighbor_node]
 
     state = Map.replace(state, :neighbors, neighbors)
-#    IO.inspect(Map.fetch!(state, :neighbors), label: "List for #{server}")
     {:noreply, state}
   end
 
@@ -173,7 +169,6 @@ defmodule PeerNode do
     neighbors = Map.fetch!(state, :neighbors)
     neighbors = neighbors -- [neighbor_node]
     state = Map.replace(state, :neighbors, neighbors)
-    #    IO.inspect(Map.fetch!(state, :neighbors), label: "List for #{server}")
     {:noreply, state}
   end
 
@@ -188,16 +183,10 @@ defmodule PeerNode do
   def handle_cast({:join, args}, state) do
     {server, nodeList1, nodeList2} = args
     neighbor_tuple = findNearestNeighbor(server, {server, nodeList1})
-    if(server == :AC40252B ||  server == :AB2DE132) do
-      IO.inspect(neighbor_tuple, label: "#{server}")
-    end
 
-#    IO.inspect(neighbor_tuple, label: "HELLO")
     {neighbors, max} = neighbor_tuple
     PeerNode.joinNeighborMap(server, {server, neighbors})
-#    Enum.each(neighbors, fn neighbor_node ->
-#      updateNeighborMap(server, {server, neighbor_node, max})
-#    end)
+
     updateNeighborMap(server, {server, List.first(neighbors), max})
     PeerNode.multicast(server, {server, neighbors, max})
     {:noreply, state}
@@ -214,27 +203,19 @@ defmodule PeerNode do
 
   def handle_cast({:sendMessage, args}, state) do
     {server, sender, receiver, hops} = args
-#    IO.inspect(args, label: "I reached sendMessage")
     if server == receiver do
-#      IO.inspect("I reached the receiver")
-#      IO.inspect(args)
       Listener.setHops(MyListener, hops)
 
       {:noreply, state}
     else
       neighbors = Map.fetch!(state, :neighbors)
-#      IO.inspect(neighbors, label: "Need to find next node from ")
 
       prefix_index = prefixCheck(server, {server, Atom.to_string(server), Atom.to_string(receiver), 0})
-#      IO.inspect(prefix_index, label: "Next node at the Longest prefix ")
       prefix = String.at(Atom.to_string(receiver), prefix_index)
       prefix = Utility.hexToDec(prefix)
 
-#      IO.inspect(prefix, label: "Next node at the prefix ")
-
       level = "L" <> Integer.to_string(prefix_index) |> String.to_atom()
       levelList = Map.fetch!(state, level)
-#      IO.inspect(levelList, label: "Level List ")
       next_node = Enum.at(levelList, prefix)
       if next_node == [] or next_node == nil do
         threshold = Listener.getThreshold(MyListener)
@@ -272,7 +253,6 @@ defmodule PeerNode do
       level = ("L" <> Integer.to_string(col_index)) |> String.to_atom()
       levelList = Map.fetch!(state, level)
       levelList = levelList -- [[failedNode]]
-#      IO.inspect(levelList, label: "#{server} L#{col_index}")
       state = Map.replace!(state, level, levelList)
 
     {:noreply, state}

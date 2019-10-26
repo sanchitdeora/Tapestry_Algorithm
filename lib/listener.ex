@@ -42,7 +42,6 @@ defmodule Listener do
   def handle_call({:setThreshold, args}, from, state) do
     state = Map.replace!(state, :threshold, args)
     hops = Map.fetch!(state, :hops)
-    IO.inspect(hops, label: "HEREEEEE length = #{length(hops)} args = #{args}")
     if(length(hops) == args) do
       send(Main, {:done})
     end
@@ -50,7 +49,6 @@ defmodule Listener do
   end
 
   def handle_call({:setNodeList, args}, from, state) do
-#    IO.inspect(args, label: "NodeList")
     state = Map.replace!(state, :nodeList, args)
     {:reply, state, state}
   end
@@ -60,11 +58,9 @@ defmodule Listener do
     hops = hops ++ [args]
     state = Map.replace!(state, :hops, hops)
     threshold = Map.fetch!(state, :threshold)
-    IO.inspect("FINISHED SUCCESFULLY #{hops}")
     if(length(hops) == threshold) do
       send(Main, {:done})
     end
-#    IO.inspect(state)
     {:reply, state, state}
   end
 

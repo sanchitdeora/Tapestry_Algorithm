@@ -40,8 +40,6 @@ defmodule Tapestry do
     Enum.map(nodeList2, fn current_node ->
       PeerNode.join(current_node,{current_node, nodeList1, nodeList2})
     end)
-
-
   end
 
 #  Starts Routing the Network
@@ -49,10 +47,7 @@ defmodule Tapestry do
     nodeList = Listener.getNodeList(MyListener)
     Enum.map(1..numRequests, fn x ->
       Enum.map(nodeList, fn sender ->
-#          sender = :AB2DE132
-#          receiver = :AC40252B
-                  receiver = Enum.random(List.delete(nodeList, sender))
-#        IO.inspect(Atom.to_string(sender))
+        receiver = Enum.random(List.delete(nodeList, sender))
         PeerNode.sendMessage(sender, {sender, sender, receiver, 0})
       end)
     end)

@@ -19,11 +19,10 @@ defmodule Master do
 
     def handle_cast({:failNodes, args}, state) do
         {numNodes, numRequests} = args
-        # Master sleeps for 0 - 1000ms after initiation, before it starts to fail nodes
-        :timer.sleep(:rand.uniform(10))
-        IO.puts("Start Failing Nodes !!!")
 
-#        IO.inspect(data, label: "Master Fail Nodes")
+        # Master sleeps for 0 - 2000ms after initiation, before it starts to fail nodes
+        :timer.sleep(:rand.uniform(2000))
+        IO.puts("Start Failing Nodes !!!")
 
         nodeList = Listener.getNodeList(MyListener)
 
@@ -35,7 +34,6 @@ defmodule Master do
         failingNodes = Enum.map(0..toBeFailed-1, fn _i->
             Enum.random(nodeList)
         end)
-        IO.inspect(failingNodes, label: "Master")
         # Starting to fail nodes chosen
         Enum.each(failingNodes, fn fail_node ->
 

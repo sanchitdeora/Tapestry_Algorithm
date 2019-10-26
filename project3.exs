@@ -30,8 +30,6 @@ defmodule Proj3 do
 
 #  Join Nodes in Network in Node List 2
   nodeList2 = nodeList -- nodeList1
-#  IO.inspect(nodeList1, label: "nodeList1")
-#  IO.inspect(nodeList2, label: "nodeList2")
 
   Tapestry.joinNetwork(nodeList2, nodeList1)
 
@@ -44,6 +42,7 @@ defmodule Proj3 do
 
   Tapestry.startRouting(numRequests)
 
+
 #  Waits for the Routing to get done
   receive do
 
@@ -52,7 +51,8 @@ defmodule Proj3 do
       nodeList = Listener.getNodeList(MyListener)
       max = Enum.max(hops)
       IO.inspect(hops, label: "Max Hop = #{max} from Hops")
-    after 1000 ->
+
+    after 10000 ->
       IO.puts(:stderr, "No message in 10 seconds")
       hops = Listener.getHops(MyListener)
       nodeList = Listener.getNodeList(MyListener)
